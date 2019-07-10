@@ -21,8 +21,10 @@ public class Cliente implements Serializable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(nullable = false)
     private String nombre;
     private String apellido;
+    @Column(nullable = false, unique = true)
     private String email;
 
     //TODO: Verificar como hacer que se guarde con minutos y segundos en la base de datos

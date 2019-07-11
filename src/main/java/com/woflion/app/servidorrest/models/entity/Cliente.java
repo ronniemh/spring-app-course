@@ -12,30 +12,40 @@ import javax.persistence.PrePersist;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 @Entity
 @Table(name = "clientes")
-public class Cliente implements Serializable{
-    
+public class Cliente implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
+    @NotEmpty
+    @Size(min = 4, max = 12, message = "Mensaje para cuando falla...")
     @Column(nullable = false)
     private String nombre;
+
+    @NotEmpty
     private String apellido;
+
+    @NotEmpty
+    @Email
     @Column(nullable = false, unique = true)
     private String email;
 
-    //TODO: Verificar como hacer que se guarde con minutos y segundos en la base de datos
+    // TODO: Verificar como hacer que se guarde con minutos y segundos en la base de
+    // datos
     @Column(name = "create_at")
     @Temporal(TemporalType.DATE)
     private Date createAt;
 
     @PrePersist
-    public void prePersist()
-    {
-        createAt =  new Date();
+    public void prePersist() {
+        createAt = new Date();
     }
 
     public Long getId() {

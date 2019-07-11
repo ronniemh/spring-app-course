@@ -3,6 +3,9 @@ package com.woflion.app.servidorrest.controllers;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import com.woflion.app.servidorrest.models.entity.Cliente;
 import com.woflion.app.servidorrest.models.services.IClienteService;
@@ -11,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,18 +59,28 @@ public class ClienteRestController {
                     "El cliente con ID: ".concat(id.toString().concat(" no existe en la base de datos")));
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<Cliente>(cliente, HttpStatus.OK);
+        response.put("mensaje: ", "El cliente con "+id+" se ha encontrado en la base de datos.");
+        response.put("cliente", cliente);
+        //TODO: retornar el response.
+        return new ResponseEntity<>(cliente, HttpStatus.OK);
     }
 
     @PostMapping(value = "/clientes")
-    public ResponseEntity<?> create(@RequestBody Cliente cliente) {
+    public ResponseEntity<?> create(@Valid @RequestBody Cliente cliente, BindingResult result) {
         Cliente clienteNuevo = null;
         Map<String, Object> response = new HashMap<>();
+
+        if(result.hasErrors())
+        {
+            response.put("errors: ", result.getFieldErrors().stream().map(c -> "El campo ".concat(c.getField()).concat(" ").concat(c.getDefaultMessage())).collect(Collectors.toList()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+        }
+
         try {
             clienteNuevo = clienteService.save(cliente);
         } catch (Exception e) {
             response.put("mensaje", "Error al insertar el objeto en la base de datos en la base de datos");
-            response.put("error:", e.getMessage());
+            response.put("error", e.getMessage());
             return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         response.put("mensaje", "El cliente ha sido creado con éxito");
@@ -75,8 +89,16 @@ public class ClienteRestController {
     }
 
     @PutMapping("/clientes/{id}")
-    public ResponseEntity<?> update(@RequestBody Cliente cliente, @PathVariable Long id) {
+    public ResponseEntity<?> update(@Valid @RequestBody Cliente cliente, BindingResult result, @PathVariable Long id) {
+        System.out.println("Entrando al update...");
         Map<String, Object> response = new HashMap<>();
+        if(result.hasErrors())
+        {
+            System.out.println("tiene errores...");
+            response.put("errores: ", result.getFieldErrors().stream().map(c -> "El campo ".concat(c.getField()).concat(" "+c.getDefaultMessage())).collect(Collectors.toList()));
+            return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+        }
+
         Cliente clienteActual = null;
         Cliente clienteUpdate = null;
         try {

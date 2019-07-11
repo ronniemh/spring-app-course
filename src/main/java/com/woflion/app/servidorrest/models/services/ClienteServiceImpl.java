@@ -18,7 +18,6 @@ public class ClienteServiceImpl implements IClienteService{
     @Override
     @Transactional(readOnly = true)
 	public List<Cliente> findAll() {
-        System.out.println("entrando a obtener todos...");
 		return (List<Cliente>) clienteDAO.findAll();
 	}
 
